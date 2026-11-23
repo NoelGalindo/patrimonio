@@ -1,0 +1,71 @@
+{
+  "projectId": "25e3195b-bdee-4a50-8011-39683e81b88c",
+  "pkg": "patrimonio-xochitepec",
+  "globalName": "PatrimonioXochitepec",
+  "shape": "package",
+  "entry": "frontend/src/design-system/index.js",
+  "cssEntry": "src/design-system/fuentes.css",
+  "docsDir": "../.design-sync/docs",
+  "provider": {
+    "component": "ThemeProvider",
+    "props": {
+      "theme": {
+        "$ref": "tema"
+      }
+    },
+    "inner": {
+      "component": "CssBaseline"
+    }
+  },
+  "componentSrcMap": {
+    "EncabezadoPagina": "src/components/EncabezadoPagina.jsx",
+    "TablaResponsiva": "src/components/TablaResponsiva.jsx",
+    "EstatusTraspasoChip": "src/components/EstatusTraspasoChip.jsx",
+    "ConfirmDialog": "src/components/ConfirmDialog.jsx",
+    "Aviso": "src/components/Aviso.jsx",
+    "Button": "src/theme.js",
+    "TextField": "src/theme.js",
+    "Chip": "src/theme.js",
+    "Card": "src/theme.js",
+    "Alert": "src/theme.js",
+    "Tabs": "src/theme.js",
+    "Switch": "src/theme.js",
+    "Dialog": "src/theme.js"
+  },
+  "dtsPropsFor": {
+    "EncabezadoPagina": "/** Título de la página (h5, negritas). */ titulo: string; /** Una o dos líneas que explican la pantalla. */ descripcion?: string; /** Botones de acción; en celular se apilan con ancho completo. */ children?: React.ReactNode;",
+    "TablaResponsiva": "/** Definición de columnas. principal = título de la tarjeta en celular; secundaria = subtítulo; soloEscritorio = oculta en la tarjeta. */ columnas: Array<{ id: string; label: string; render: (fila: any) => React.ReactNode; align?: 'left' | 'center' | 'right'; principal?: boolean; secundaria?: boolean; soloEscritorio?: boolean }>; /** Registros a mostrar. */ filas: any[]; /** Llave única por fila (por defecto fila.id). */ getKey?: (fila: any) => string | number; /** Hace clicable la fila o tarjeta. */ onClickFila?: (fila: any) => void; /** Botones por fila (IconButton + Tooltip). */ acciones?: (fila: any) => React.ReactNode; /** Muestra casillas de selección. */ seleccion?: { esSeleccionada: (fila: any) => boolean; alternar: (fila: any) => void }; /** Barra de progreso superior. */ cargando?: boolean; /** Mensaje cuando no hay filas. */ textoVacio?: string; /** Paginación del servidor (textos en español). */ paginacion?: { count: number; page: number; rowsPerPage: number; rowsPerPageOptions?: number[]; onPageChange: (event: unknown, page: number) => void; onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void }; /** Ancho mínimo de la tabla de escritorio (650). */ minWidth?: number; /** Fondo del encabezado de la tabla (color CSS). */ colorEncabezado?: string;",
+    "EstatusTraspasoChip": "/** Estatus de la solicitud tal como lo devuelve la API. */ estatus: 'PENDIENTE' | 'AUTORIZADA' | 'RECHAZADA' | 'CANCELADA';",
+    "ConfirmDialog": "/** Muestra el diálogo. */ open: boolean; titulo?: string; /** Explicación de la acción y sus consecuencias. */ mensaje?: string; /** Texto del botón principal (\"Confirmar\"). */ textoConfirmar?: string; /** Color del botón principal: error para acciones destructivas, success para autorizar. */ color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'; /** Agrega un campo de comentario. */ comentario?: null | 'opcional' | 'obligatorio'; /** Etiqueta del campo de comentario (\"Comentario\"). */ etiquetaComentario?: string; /** Acción a confirmar; si devuelve una promesa rechazada, su mensaje se muestra en el diálogo. */ onConfirm: (comentario: string) => void | Promise<unknown>; onClose: () => void;",
+    "Aviso": "/** Aviso a mostrar; null lo oculta. Se cierra solo a los 6 segundos. */ aviso: { mensaje: string; tipo: 'success' | 'error' | 'info' | 'warning' } | null; /** Limpia el aviso. */ onClose: () => void;",
+    "Button": "/** contained = acción principal, outlined = secundaria, text = Cancelar/enlaces. */ variant?: 'contained' | 'outlined' | 'text'; /** primary = verde #00A887, secondary = fucsia #E40046, info = azul #009FE3. */ color?: 'primary' | 'secondary' | 'info' | 'success' | 'error' | 'warning' | 'inherit'; size?: 'small' | 'medium' | 'large'; disabled?: boolean; fullWidth?: boolean; startIcon?: React.ReactNode; endIcon?: React.ReactNode; type?: 'button' | 'submit' | 'reset'; onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void; children?: React.ReactNode; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "TextField": "/** Etiqueta en español. */ label?: React.ReactNode; value?: unknown; defaultValue?: unknown; onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean; disabled?: boolean; /** Marca el campo en rojo; acompaña con helperText. */ error?: boolean; helperText?: React.ReactNode; placeholder?: string; type?: string; fullWidth?: boolean; /** El tema usa 'small' por defecto. */ size?: 'small' | 'medium'; multiline?: boolean; minRows?: number; /** Convierte el campo en lista; hijos: MenuItem. */ select?: boolean; /** MUI v9: { input: { startAdornment }, inputLabel: { shrink }, htmlInput: { step, min } }. */ slotProps?: object; children?: React.ReactNode; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "Chip": "label?: React.ReactNode; color?: 'primary' | 'secondary' | 'info' | 'success' | 'error' | 'warning' | 'default'; /** En Patrimonio: 'small' con fontWeight 700. */ size?: 'small' | 'medium'; variant?: 'filled' | 'outlined'; icon?: React.ReactElement; /** Muestra el botón para quitar (filtros). */ onDelete?: (event: unknown) => void; onClick?: (event: React.MouseEvent) => void; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "Card": "/** 'outlined' para tarjetas anidadas. */ variant?: 'elevation' | 'outlined'; /** Contenido: CardContent, CardActions. */ children?: React.ReactNode; /** p. ej. borde superior de color: { borderTop: '4px solid', borderTopColor: 'info.main' }. */ sx?: object;",
+    "Alert": "severity?: 'error' | 'warning' | 'info' | 'success'; variant?: 'standard' | 'outlined' | 'filled'; /** Muestra la X para cerrar. */ onClose?: (event: React.SyntheticEvent) => void; icon?: React.ReactNode | false; action?: React.ReactNode; children?: React.ReactNode; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "Tabs": "/** Valor de la Tab activa. */ value: unknown; onChange?: (event: React.SyntheticEvent, value: any) => void; /** El tema usa 'scrollable' por defecto. */ variant?: 'standard' | 'scrollable' | 'fullWidth'; /** Hijos: Tab (value, label, sx). */ children?: React.ReactNode; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "Switch": "checked?: boolean; defaultChecked?: boolean; onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void; disabled?: boolean; size?: 'small' | 'medium'; color?: 'primary' | 'secondary' | 'info' | 'success' | 'error' | 'warning'; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;",
+    "Dialog": "open: boolean; onClose?: (event: unknown, reason: 'backdropClick' | 'escapeKeyDown') => void; /** 'sm' para formularios, 'md' para fichas de detalle. */ maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false; fullWidth?: boolean; /** true en celular (pantalla completa). */ fullScreen?: boolean; /** Hijos: DialogTitle, DialogContent, DialogActions. */ children?: React.ReactNode; /** Estilos puntuales con valores del tema (p. ej. { fontWeight: 700 }). */ sx?: object;"
+  },
+  "overrides": {
+    "ConfirmDialog": {
+      "cardMode": "single",
+      "viewport": "640x420"
+    },
+    "TablaResponsiva": {
+      "cardMode": "column"
+    },
+    "Aviso": {
+      "cardMode": "single",
+      "viewport": "560x140"
+    },
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "720x520"
+    },
+    "EncabezadoPagina": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
