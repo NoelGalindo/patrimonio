@@ -49,7 +49,9 @@ export default function AuthLayout() {
                         p: 8,
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "center"
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: "#00A887"
                     }}
                 >
                     <Box
@@ -60,12 +62,15 @@ export default function AuthLayout() {
                             width: 350,
                             height: "auto",
                             mb: 4,
+                            bgcolor: "#00A887",
+                            borderRadius: 2
                         }}
                     />
 
                     <Typography
                         variant="h3"
                         fontWeight="bold"
+                        sx={{ color: 'white' }}
                     >
                         Sistema de Gestión
                     </Typography>
@@ -73,12 +78,14 @@ export default function AuthLayout() {
                     <Typography
                         variant="h5"
                         mt={2}
+                        sx={{ color: 'white' }}
                     >
                         Patrimonio Municipal
                     </Typography>
 
                     <Typography
                         mt={4}
+                        sx={{ color: 'white' }}
                     >
                         Administración y control de los bienes
                         municipales del Ayuntamiento.
@@ -96,13 +103,23 @@ export default function AuthLayout() {
 
                 <Box
                     sx={{
-                        height: "100%",
+                        minHeight: "100%",
                         display: "flex",
+                        flexDirection: "column",
                         justifyContent: "center",
                         alignItems: "center",
-                        p: 4
+                        gap: 3,
+                        p: { xs: 2, sm: 4 }
                     }}
                 >
+
+                    {/* En celular el panel izquierdo se oculta: se muestra el logo arriba del formulario */}
+                    <Box
+                        component="img"
+                        src={logo}
+                        alt="Logo Ayuntamiento de Xochitepec"
+                        sx={{ display: { xs: "block", md: "none" }, width: 180, maxWidth: "60%", height: "auto" }}
+                    />
 
                     <Outlet />
 
