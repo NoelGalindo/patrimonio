@@ -4,3 +4,11 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+
+# Secretos del despliegue (docker compose)
+.env
+
+# Documentos de referencia con datos reales del inventario (solo locales; el repo es público)
+*.xlsx
+*.docx
+~$*
