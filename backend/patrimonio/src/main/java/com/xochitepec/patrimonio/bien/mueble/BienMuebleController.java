@@ -1,5 +1,7 @@
 package com.xochitepec.patrimonio.bien.mueble;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xochitepec.patrimonio.bien.mueble.BienMuebleDtos.BienMuebleRequest;
 import com.xochitepec.patrimonio.bien.mueble.BienMuebleDtos.BienMuebleResponse;
 import com.xochitepec.patrimonio.common.PageResponse;
+import com.xochitepec.patrimonio.depreciacion.CalculadoraDepreciacion.PeriodoAnual;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +38,12 @@ public class BienMuebleController {
             @RequestParam(required = false) Long areaId,
             @RequestParam(required = false) Boolean activo,
             @PageableDefault(size = 20, sort = "noControlInventario", direction = Sort.Direction.ASC) Pageable pageable) {
-        return PageResponse.of(service.listar(q, areaId, activo, pageable), BienMuebleResponse::from);
+        return PageResponse.of(service.listar(q, areaId, activo, pageable), service.conDepreciacion(BienMuebleResponse::from));
     }
 
     @GetMapping("/{id}")
     public BienMuebleResponse obtener(@PathVariable Long id) {
-        return BienMuebleResponse.from(service.obtener(id));
+        return service.conDepreciacion(BienMuebleResponse::from).apply(service.obtener(id));
     }
 
     @PostMapping
@@ -49,13 +52,20 @@ public class BienMuebleController {
     public BienMuebleResponse crear(@Valid @RequestBody BienMuebleRequest req) {
         BienMueble b = new BienMueble();
         req.aplicar(b);
-        return BienMuebleResponse.from(service.crear(b, req.areaId()));
+        return service.conDepreciacion(BienMuebleResponse::from).apply(service.crear(b, req.areaId(), req.cuentaContableId()));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('PATRIMONIO')")
     public BienMuebleResponse actualizar(@PathVariable Long id, @Valid @RequestBody BienMuebleRequest req) {
-        return BienMuebleResponse.from(service.actualizar(id, req.areaId(), req::aplicar));
+        return service.conDepreciacion(BienMuebleResponse::from)
+                .apply(service.actualizar(id, req.areaId(), req.cuentaContableId(), req::aplicar));
+    }
+
+    /** Calendario anual de depreciación (mismas reglas de visibilidad que el detalle). */
+    @GetMapping("/{id}/depreciacion")
+    public List<PeriodoAnual> depreciacion(@PathVariable Long id) {
+        return service.calendario(id);
     }
 
     @DeleteMapping("/{id}")

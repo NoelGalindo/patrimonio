@@ -25,6 +25,20 @@ export const bienesApi = {
     crear: (tipo, body) => api(`/bienes/${tipo}`, { method: "POST", body }),
     actualizar: (tipo, id, body) => api(`/bienes/${tipo}/${id}`, { method: "PUT", body }),
     darDeBaja: (tipo, id) => api(`/bienes/${tipo}/${id}`, { method: "DELETE" }),
+    depreciacion: (tipo, id) => api(`/bienes/${tipo}/${id}/depreciacion`),
+};
+
+// ---------- Cuentas contables CONAC (edición solo ADMINISTRADOR) ----------
+export const cuentasContablesApi = {
+    asignables: (tipoBien) => api("/catalogos/cuentas-contables", { params: { tipoBien } }),
+    listarTodas: () => api("/admin/cuentas-contables"),
+    crear: (body) => api("/admin/cuentas-contables", { method: "POST", body }),
+    actualizar: (id, body) => api(`/admin/cuentas-contables/${id}`, { method: "PUT", body }),
+};
+
+// ---------- Reportes ----------
+export const reportesApi = {
+    depreciacion: (anio) => api("/reportes/depreciacion", { params: { anio } }),
 };
 
 // ---------- Usuarios (solo ADMINISTRADOR) ----------

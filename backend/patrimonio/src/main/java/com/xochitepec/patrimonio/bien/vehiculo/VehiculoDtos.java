@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import com.xochitepec.patrimonio.catalogo.CatalogoDtos.AreaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.CuentaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.DepreciacionResumen;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -35,10 +37,10 @@ public final class VehiculoDtos {
             LocalDate fechaFactura,
             @Size(max = 60) String folioFactura,
             @DecimalMin(value = "0", message = "No puede ser negativo") BigDecimal valorFactura,
-            @DecimalMin(value = "0", message = "No puede ser negativo") BigDecimal valorDepreciado,
             @Size(max = 150) String propiedad,
             @Size(max = 250) String condiciones,
-            @NotNull(message = "El área designada es obligatoria") Long areaId) {
+            @NotNull(message = "El área designada es obligatoria") Long areaId,
+            @NotNull(message = "La cuenta contable es obligatoria") Long cuentaContableId) {
 
         public void aplicar(Vehiculo v) {
             v.setNumero(numero);
@@ -59,7 +61,6 @@ public final class VehiculoDtos {
             v.setFechaFactura(fechaFactura);
             v.setFolioFactura(folioFactura);
             v.setValorFactura(valorFactura);
-            v.setValorDepreciado(valorDepreciado);
             v.setPropiedad(propiedad);
             v.setCondiciones(condiciones);
         }
@@ -69,16 +70,18 @@ public final class VehiculoDtos {
             String folioResguardo, LocalDate fechaRevision, String marca, String version, String color,
             String modelo, String noSerie, String cilindros, String noMotor, String placas, String documentacion,
             String emisor, LocalDate fechaFactura, String folioFactura, BigDecimal valorFactura,
-            BigDecimal valorDepreciado, String propiedad, String condiciones, AreaRef area, boolean activo,
+            String propiedad, String condiciones, AreaRef area, CuentaRef cuentaContable,
+            DepreciacionResumen depreciacion, boolean activo,
             Instant creadoEn, Instant actualizadoEn) {
 
-        public static VehiculoResponse from(Vehiculo v) {
+        public static VehiculoResponse from(Vehiculo v, DepreciacionResumen depreciacion) {
             return new VehiculoResponse(v.getId(), v.getNumero(), v.getNoEconomico(), v.getNoInventario(),
                     v.getFolioResguardo(), v.getFechaRevision(), v.getMarca(), v.getVersion(), v.getColor(),
                     v.getModelo(), v.getNoSerie(), v.getCilindros(), v.getNoMotor(), v.getPlacas(),
                     v.getDocumentacion(), v.getEmisor(), v.getFechaFactura(), v.getFolioFactura(),
-                    v.getValorFactura(), v.getValorDepreciado(), v.getPropiedad(), v.getCondiciones(),
-                    AreaRef.from(v.getArea()), v.isActivo(), v.getCreadoEn(), v.getActualizadoEn());
+                    v.getValorFactura(), v.getPropiedad(), v.getCondiciones(),
+                    AreaRef.from(v.getArea()),
+                    CuentaRef.from(v.getCuentaContable()), depreciacion, v.isActivo(), v.getCreadoEn(), v.getActualizadoEn());
         }
     }
 }

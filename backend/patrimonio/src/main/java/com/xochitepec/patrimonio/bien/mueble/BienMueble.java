@@ -69,4 +69,24 @@ public class BienMueble extends BienBase {
 
     @Column(precision = 14, scale = 2)
     private BigDecimal costo;
+
+    @Override
+    public BigDecimal valorDepreciable() {
+        return costo;
+    }
+
+    @Override
+    public LocalDate fechaBaseDepreciacion() {
+        return fechaFactura;
+    }
+
+    @Override
+    public String descripcionValorDepreciable() {
+        return "el costo";
+    }
+
+    @Override
+    public String descripcionFechaBase() {
+        return "la fecha de factura";
+    }
 }

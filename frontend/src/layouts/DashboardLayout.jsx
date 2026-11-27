@@ -30,6 +30,7 @@ import InventoryIcon from "@mui/icons-material/Inventory2Outlined";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import SwapHorizIcon from "@mui/icons-material/SwapHorizOutlined";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutIcon from "@mui/icons-material/LogoutOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -85,6 +86,7 @@ export default function DashboardLayout() {
         { text: "Altas / Registro", path: "/dashboard/altas", icon: <AddCircleIcon />, roles: [PATRIMONIO] },
         { text: "Bajas", path: "/dashboard/bajas", icon: <RemoveCircleIcon />, roles: [PATRIMONIO, ADMINISTRADOR] },
         { text: "Traspasos", path: "/dashboard/transferencias", icon: <SwapHorizIcon />, roles: [USUARIO, PATRIMONIO, ADMINISTRADOR] },
+        { text: "Depreciación", path: "/dashboard/depreciacion", icon: <TrendingDownIcon />, roles: [PATRIMONIO, ADMINISTRADOR] },
         { text: "Usuarios", path: "/dashboard/usuarios", icon: <PeopleIcon />, roles: [ADMINISTRADOR, PATRIMONIO] },
         // Patrimonio solo administra áreas; el administrador ve toda la configuración
         usuario.rol === PATRIMONIO

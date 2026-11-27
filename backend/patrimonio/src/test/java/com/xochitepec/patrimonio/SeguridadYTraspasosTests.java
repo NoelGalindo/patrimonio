@@ -31,6 +31,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.jayway.jsonpath.JsonPath;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import com.xochitepec.patrimonio.bien.mueble.BienMueble;
 import com.xochitepec.patrimonio.bien.mueble.BienMuebleRepository;
 import com.xochitepec.patrimonio.catalogo.Area;
@@ -156,8 +158,9 @@ class SeguridadYTraspasosTests {
     @Test
     void soloPatrimonioCapturaBienes() throws Exception {
         String body = """
-                {"noControlInventario":"N-1","descripcion":"SILLA","areaId":%d,"costo":100}
-                """.formatted(areaA.getId());
+                {"noControlInventario":"N-1","descripcion":"SILLA","areaId":%d,"costo":100,"cuentaContableId":%d}
+                """.formatted(areaA.getId(), jdbc.sql("SELECT id FROM cuenta_contable WHERE clave = '1.2.4.1.1'")
+                        .query(Long.class).single());
         mvc.perform(post("/api/bienes/muebles").contentType(MediaType.APPLICATION_JSON).content(body)
                 .header(HttpHeaders.AUTHORIZATION, bearer(login("usuarioa@x.mx"))))
                 .andExpect(status().isForbidden());
@@ -280,7 +283,8 @@ class SeguridadYTraspasosTests {
 
         BienMueble actualizado = muebles.findById(bienA.getId()).orElseThrow();
         assertThat(actualizado.getArea().getId()).isEqualTo(areaB.getId());
-        assertThat(actualizado.getServidorPublico()).isEqualTo("Juan Receptor");
+        // El resguardo pasa al titular del área destino
+        assertThat(actualizado.getServidorPublico()).isEqualTo("Titular de Planeación del Desarrollo Urbano");
 
         // El área destino ya ve el bien y el área origen ya no
         mvc.perform(get("/api/bienes/muebles").header(HttpHeaders.AUTHORIZATION, bearer(tokenA)))
@@ -295,10 +299,44 @@ class SeguridadYTraspasosTests {
                 .andReturn();
         byte[] bytes = pdf.getResponse().getContentAsByteArray();
         assertThat(new String(bytes, 0, 4)).isEqualTo("%PDF");
+        // Firman entrega, recibe y autoriza (Patrimonio); Contabilidad no firma el vale de traspaso
+        String texto = new PdfTextExtractor(new PdfReader(bytes)).getTextFromPage(1);
+        assertThat(texto).contains("ENTREGA EN CONDICIONES FUNCIONALES", "RECIBE EN CONDICIONES FUNCIONALES", "AUTORIZA",
+                        "TITULAR DE RECURSOS HUMANOS", "TITULAR DE PLANEACIÓN DEL DESARROLLO URBANO")
+                .doesNotContain("Vo. Bo.").doesNotContainIgnoringCase("CONTABILIDAD");
+        if (System.getProperty("vale.salida") != null) {
+            java.nio.file.Files.write(java.nio.file.Path.of(System.getProperty("vale.salida")), bytes);
+        }
 
         // Ya resuelta, no se puede volver a autorizar
         mvc.perform(patch("/api/traspasos/" + id + "/autorizar").header(HttpHeaders.AUTHORIZATION, bearer(tokenPat)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void autorizarExigeTitularEnAmbasAreasYLoGuarda() throws Exception {
+        String tokenA = login("usuarioa@x.mx");
+        String tokenPat = login("patrimonio@x.mx");
+        long id = idDe(solicitar(tokenA, bienA.getId(), areaB.getId()).andExpect(status().isCreated()).andReturn());
+
+        jdbc.sql("UPDATE area SET nombre_cargo = NULL WHERE id = ?").param(areaB.getId()).update();
+        mvc.perform(patch("/api/traspasos/" + id + "/autorizar").header(HttpHeaders.AUTHORIZATION, bearer(tokenPat)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje", org.hamcrest.Matchers.containsString("no tiene titular")));
+
+        jdbc.sql("UPDATE area SET nombre_cargo = 'Lic. Ana Pérez' WHERE id = ?").param(areaB.getId()).update();
+        mvc.perform(patch("/api/traspasos/" + id + "/autorizar").header(HttpHeaders.AUTHORIZATION, bearer(tokenPat)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.titularDestino").value("Lic. Ana Pérez"));
+
+        // Cambiar después al titular no altera el vale ya autorizado
+        jdbc.sql("UPDATE area SET nombre_cargo = 'Otra Persona' WHERE id = ?").param(areaB.getId()).update();
+        mvc.perform(get("/api/traspasos/" + id).header(HttpHeaders.AUTHORIZATION, bearer(tokenPat)))
+                .andExpect(jsonPath("$.titularDestino").value("Lic. Ana Pérez"));
+        byte[] vale = mvc.perform(get("/api/traspasos/" + id + "/vale.pdf").header(HttpHeaders.AUTHORIZATION, bearer(tokenPat)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        assertThat(new PdfTextExtractor(new PdfReader(vale)).getTextFromPage(1)).contains("LIC. ANA PÉREZ")
+                .doesNotContain("OTRA PERSONA");
     }
 
     @Test
@@ -352,8 +390,7 @@ class SeguridadYTraspasosTests {
     private org.springframework.test.web.servlet.ResultActions solicitar(String token, Long bienId, Long destinoId)
             throws Exception {
         String body = """
-                {"bienIds":[%d],"areaDestinoId":%d,"oficioPeticion":"DPV/1/2026",
-                 "recibeNombre":"Juan Receptor","recibeCargo":"Auxiliar"}
+                {"bienIds":[%d],"areaDestinoId":%d,"oficioPeticion":"DPV/1/2026"}
                 """.formatted(bienId, destinoId);
         return mvc.perform(post("/api/traspasos").contentType(MediaType.APPLICATION_JSON).content(body)
                 .header(HttpHeaders.AUTHORIZATION, bearer(token)));
@@ -386,6 +423,7 @@ class SeguridadYTraspasosTests {
     private Area area(String nombre, DireccionGeneral dg) {
         Area a = new Area();
         a.setNombre(nombre);
+        a.setNombreCargo("Titular de " + nombre); // firma el vale de traspaso
         a.setDireccionGeneral(dg);
         return areas.save(a);
     }

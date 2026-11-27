@@ -168,13 +168,17 @@ public class ValeTraspasoPdfService {
         PdfPTable t = new PdfPTable(2);
         t.setWidthPercentage(100);
         t.setSpacingBefore(28);
-        t.addCell(firma("AUTORIZA", p.get("firma.patrimonio.nombre"), p.get("firma.patrimonio.cargo")));
-        t.addCell(firma("Vo. Bo.", p.get("firma.contabilidad.nombre"), p.get("firma.contabilidad.cargo")));
+        // Firman las dos áreas y autoriza la Dirección de Patrimonio (Contabilidad no firma el vale de traspaso)
+        // Entrega y recibe: titulares de las áreas, responsables del inventario a su resguardo
         t.addCell(firma("ENTREGA EN CONDICIONES FUNCIONALES",
-                unicos(d, SolicitudTraspasoDetalle::getSnapEntregaNombre),
-                unir(unicos(d, SolicitudTraspasoDetalle::getSnapEntregaCargo), s.getAreaOrigen().getNombre())));
-        t.addCell(firma("RECIBE EN CONDICIONES FUNCIONALES", s.getRecibeNombre(),
-                unir(s.getRecibeCargo(), s.getAreaDestino().getNombre())));
+                s.getTitularOrigen() != null ? s.getTitularOrigen() : s.getAreaOrigen().getNombreCargo(),
+                "TITULAR DE " + s.getAreaOrigen().getNombre()));
+        t.addCell(firma("RECIBE EN CONDICIONES FUNCIONALES",
+                s.getTitularDestino() != null ? s.getTitularDestino() : s.getAreaDestino().getNombreCargo(),
+                "TITULAR DE " + s.getAreaDestino().getNombre()));
+        PdfPCell autoriza = firma("AUTORIZA", p.get("firma.patrimonio.nombre"), p.get("firma.patrimonio.cargo"));
+        autoriza.setColspan(2); // centrada debajo de las dos áreas
+        t.addCell(autoriza);
         return t;
     }
 

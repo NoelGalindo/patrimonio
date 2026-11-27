@@ -82,4 +82,24 @@ public class BienInmueble extends BienBase {
 
     @Column(name = "superficie_predio", precision = 14, scale = 2)
     private BigDecimal superficiePredio;
+
+    @Override
+    public BigDecimal valorDepreciable() {
+        return valorConstruccion;
+    }
+
+    @Override
+    public LocalDate fechaBaseDepreciacion() {
+        return fechaAdquisicion;
+    }
+
+    @Override
+    public String descripcionValorDepreciable() {
+        return "el valor de construcción";
+    }
+
+    @Override
+    public String descripcionFechaBase() {
+        return "la fecha de adquisición";
+    }
 }

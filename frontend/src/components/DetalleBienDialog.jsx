@@ -13,6 +13,7 @@ import {
 import { TIPOS_BIEN } from "../bienes/tiposBien";
 import valorCampo from "../bienes/valorCampo";
 import useEsMovil from "../hooks/useEsMovil";
+import DepreciacionBien from "./DepreciacionBien";
 
 /** Ficha completa de un bien, con todos los campos de su tipo. */
 export default function DetalleBienDialog({ tipo, bien, onClose, acciones }) {
@@ -60,6 +61,8 @@ export default function DetalleBienDialog({ tipo, bien, onClose, acciones }) {
                         </Grid>
                     </Box>
                 ))}
+                <Divider sx={{ mb: 2 }} />
+                <DepreciacionBien tipo={tipo} bien={bien} />
             </DialogContent>
             <DialogActions sx={{ px: 3, py: 1.5 }}>
                 {acciones}

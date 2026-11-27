@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import com.xochitepec.patrimonio.catalogo.CatalogoDtos.AreaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.CuentaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.DepreciacionResumen;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -39,7 +41,8 @@ public final class BienInmuebleDtos {
             @DecimalMin(value = "0", message = "No puede ser negativo") BigDecimal valorTotal,
             @DecimalMin(value = "0", message = "No puede ser negativo") BigDecimal superficieConstruccion,
             @DecimalMin(value = "0", message = "No puede ser negativo") BigDecimal superficiePredio,
-            @NotNull(message = "El área es obligatoria") Long areaId) {
+            @NotNull(message = "El área es obligatoria") Long areaId,
+            @NotNull(message = "La cuenta contable es obligatoria") Long cuentaContableId) {
 
         public void aplicar(BienInmueble b) {
             b.setNoExpediente(noExpediente.trim());
@@ -77,16 +80,18 @@ public final class BienInmuebleDtos {
             BigDecimal longitud, String propietarios, LocalDate fechaAdquisicion, String fojas,
             String observaciones, String documentacion, String claveCatastral, LocalDate fechaUltimoAvaluo,
             BigDecimal valorTerreno, BigDecimal valorConstruccion, BigDecimal valorTotal,
-            BigDecimal superficieConstruccion, BigDecimal superficiePredio, AreaRef area, boolean activo,
+            BigDecimal superficieConstruccion, BigDecimal superficiePredio, AreaRef area, CuentaRef cuentaContable,
+            DepreciacionResumen depreciacion, boolean activo,
             Instant creadoEn, Instant actualizadoEn) {
 
-        public static BienInmuebleResponse from(BienInmueble b) {
+        public static BienInmuebleResponse from(BienInmueble b, DepreciacionResumen depreciacion) {
             return new BienInmuebleResponse(b.getId(), b.getNoExpediente(), b.getFechaRevision(), b.getColonia(),
                     b.getCalle(), b.getDenominacion(), b.getTipoUso(), b.getMedidasColindancias(), b.getLatitud(),
                     b.getLongitud(), b.getPropietarios(), b.getFechaAdquisicion(), b.getFojas(),
                     b.getObservaciones(), b.getDocumentacion(), b.getClaveCatastral(), b.getFechaUltimoAvaluo(),
                     b.getValorTerreno(), b.getValorConstruccion(), b.getValorTotal(), b.getSuperficieConstruccion(),
-                    b.getSuperficiePredio(), AreaRef.from(b.getArea()), b.isActivo(), b.getCreadoEn(),
+                    b.getSuperficiePredio(), AreaRef.from(b.getArea()),
+                    CuentaRef.from(b.getCuentaContable()), depreciacion, b.isActivo(), b.getCreadoEn(),
                     b.getActualizadoEn());
         }
     }

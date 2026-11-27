@@ -23,6 +23,7 @@ import useFetch from "../hooks/useFetch";
 import { bienesApi } from "../api/endpoints";
 import { CLAVES_TIPO, TIPOS_BIEN, aFormulario, aPeticion, formularioVacio } from "../bienes/tiposBien";
 import AreaSelect from "../components/AreaSelect";
+import CuentaContableSelect from "../components/CuentaContableSelect";
 import Aviso from "../components/Aviso";
 import EncabezadoPagina from "../components/EncabezadoPagina";
 
@@ -169,6 +170,22 @@ function FormularioBien({ tipo, bienId, inicial }) {
                     onChange={(v) => set("areaId", v)}
                     error={Boolean(errores.areaId)}
                     helperText={errores.areaId}
+                    sx={{ maxWidth: { sm: 560 } }}
+                />
+            </Box>
+
+            <Box>
+                <Divider sx={{ mb: 3 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: "700", color: "primary.main", mb: 2 }}>
+                    Clasificación contable
+                </Typography>
+                <CuentaContableSelect
+                    tipoContable={def.tipoContable}
+                    required
+                    value={form.cuentaContableId}
+                    onChange={(v) => set("cuentaContableId", v)}
+                    error={Boolean(errores.cuentaContableId)}
+                    helperText={errores.cuentaContableId}
                     sx={{ maxWidth: { sm: 560 } }}
                 />
             </Box>

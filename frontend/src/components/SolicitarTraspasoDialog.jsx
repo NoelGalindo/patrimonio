@@ -29,16 +29,23 @@ export default function SolicitarTraspasoDialog({ open, onClose, onCreada, biene
     const esMovil = useEsMovil();
     const [bienes, setBienes] = useState(bienesIniciales);
     const [busqueda, setBusqueda] = useState("");
-    const [form, setForm] = useState({ areaDestinoId: "", oficioPeticion: "", motivo: "", recibeNombre: "", recibeCargo: "" });
+    const [form, setForm] = useState({ areaDestinoId: "", oficioPeticion: "", motivo: "" });
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
+    const { data: areas } = useFetch(open ? "/catalogos/areas" : null);
     const q = useDebounce(busqueda);
     const { data, cargando } = useFetch(open ? "/bienes/muebles" : null, { q, size: 20 });
 
     // Una vez elegido el primer bien, solo se ofrecen bienes de la misma área
     const areaOrigen = bienes[0]?.area ?? null;
     const opciones = (data?.contenido ?? []).filter((b) => !areaOrigen || b.area.id === areaOrigen.id);
+
+    // En el vale firman los titulares de ambas áreas
+    const titularDe = (id) => areas?.find((a) => a.id === Number(id))?.nombreCargo || null;
+    const titularOrigen = areaOrigen ? titularDe(areaOrigen.id) : null;
+    const titularDestino = form.areaDestinoId !== "" ? titularDe(form.areaDestinoId) : null;
+    const faltaTitular = Boolean(areaOrigen && form.areaDestinoId !== "" && areas && (!titularOrigen || !titularDestino));
 
     const set = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
 
@@ -51,8 +58,6 @@ export default function SolicitarTraspasoDialog({ open, onClose, onCreada, biene
                 areaDestinoId: form.areaDestinoId === "" ? null : Number(form.areaDestinoId),
                 oficioPeticion: form.oficioPeticion,
                 motivo: form.motivo,
-                recibeNombre: form.recibeNombre,
-                recibeCargo: form.recibeCargo,
             });
             onCreada?.(creada);
             onClose();
@@ -63,7 +68,7 @@ export default function SolicitarTraspasoDialog({ open, onClose, onCreada, biene
         }
     };
 
-    const valido = bienes.length > 0 && form.areaDestinoId !== "" && form.recibeNombre.trim() !== "";
+    const valido = bienes.length > 0 && form.areaDestinoId !== "";
 
     return (
         <Dialog open={open} onClose={enviando ? undefined : onClose} maxWidth="md" fullWidth fullScreen={esMovil}>
@@ -134,12 +139,25 @@ export default function SolicitarTraspasoDialog({ open, onClose, onCreada, biene
                     <Grid size={{ xs: 12, md: 6 }}>
                         <TextField fullWidth label="Oficio de petición número" value={form.oficioPeticion} onChange={set("oficioPeticion")} placeholder="DPVXOCHI/595/06-2026" />
                     </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField fullWidth required label="Nombre de quien recibe" value={form.recibeNombre} onChange={set("recibeNombre")} helperText="Servidor público del área destino que tendrá el resguardo" />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField fullWidth label="Cargo de quien recibe" value={form.recibeCargo} onChange={set("recibeCargo")} />
-                    </Grid>
+                    {areaOrigen && form.areaDestinoId !== "" && areas && (
+                        <Grid size={12}>
+                            <Alert severity={faltaTitular ? "warning" : "info"}>
+                                <strong>Firmarán el vale los titulares de las áreas:</strong>
+                                <br />
+                                Entrega: {titularOrigen || "sin titular registrado"} ({areaOrigen.nombre})
+                                <br />
+                                Recibe: {titularDestino || "sin titular registrado"} (
+                                {areas.find((a) => a.id === Number(form.areaDestinoId))?.nombre})
+                                {faltaTitular && (
+                                    <>
+                                        <br />
+                                        Puedes enviar la solicitud, pero Patrimonio no podrá autorizarla hasta que el área tenga
+                                        titular registrado.
+                                    </>
+                                )}
+                            </Alert>
+                        </Grid>
+                    )}
                     <Grid size={12}>
                         <TextField fullWidth multiline minRows={2} label="Motivo del traspaso" value={form.motivo} onChange={set("motivo")} />
                     </Grid>

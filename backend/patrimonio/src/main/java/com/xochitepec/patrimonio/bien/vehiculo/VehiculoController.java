@@ -1,5 +1,7 @@
 package com.xochitepec.patrimonio.bien.vehiculo;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.xochitepec.patrimonio.bien.vehiculo.VehiculoDtos.VehiculoRequest;
 import com.xochitepec.patrimonio.bien.vehiculo.VehiculoDtos.VehiculoResponse;
 import com.xochitepec.patrimonio.common.PageResponse;
+import com.xochitepec.patrimonio.depreciacion.CalculadoraDepreciacion.PeriodoAnual;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +38,12 @@ public class VehiculoController {
             @RequestParam(required = false) Long areaId,
             @RequestParam(required = false) Boolean activo,
             @PageableDefault(size = 20, sort = "noInventario", direction = Sort.Direction.ASC) Pageable pageable) {
-        return PageResponse.of(service.listar(q, areaId, activo, pageable), VehiculoResponse::from);
+        return PageResponse.of(service.listar(q, areaId, activo, pageable), service.conDepreciacion(VehiculoResponse::from));
     }
 
     @GetMapping("/{id}")
     public VehiculoResponse obtener(@PathVariable Long id) {
-        return VehiculoResponse.from(service.obtener(id));
+        return service.conDepreciacion(VehiculoResponse::from).apply(service.obtener(id));
     }
 
     @PostMapping
@@ -49,13 +52,20 @@ public class VehiculoController {
     public VehiculoResponse crear(@Valid @RequestBody VehiculoRequest req) {
         Vehiculo v = new Vehiculo();
         req.aplicar(v);
-        return VehiculoResponse.from(service.crear(v, req.areaId()));
+        return service.conDepreciacion(VehiculoResponse::from).apply(service.crear(v, req.areaId(), req.cuentaContableId()));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('PATRIMONIO')")
     public VehiculoResponse actualizar(@PathVariable Long id, @Valid @RequestBody VehiculoRequest req) {
-        return VehiculoResponse.from(service.actualizar(id, req.areaId(), req::aplicar));
+        return service.conDepreciacion(VehiculoResponse::from)
+                .apply(service.actualizar(id, req.areaId(), req.cuentaContableId(), req::aplicar));
+    }
+
+    /** Calendario anual de depreciación (mismas reglas de visibilidad que el detalle). */
+    @GetMapping("/{id}/depreciacion")
+    public List<PeriodoAnual> depreciacion(@PathVariable Long id) {
+        return service.calendario(id);
     }
 
     @DeleteMapping("/{id}")

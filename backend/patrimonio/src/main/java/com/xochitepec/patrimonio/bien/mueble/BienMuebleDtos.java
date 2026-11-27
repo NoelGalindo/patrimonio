@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import com.xochitepec.patrimonio.catalogo.CatalogoDtos.AreaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.CuentaRef;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.DepreciacionResumen;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -33,7 +35,8 @@ public final class BienMuebleDtos {
             @Size(max = 200) String expedidaPor,
             LocalDate fechaFactura,
             @DecimalMin(value = "0", message = "El costo no puede ser negativo") BigDecimal costo,
-            @NotNull(message = "El área es obligatoria") Long areaId) {
+            @NotNull(message = "El área es obligatoria") Long areaId,
+            @NotNull(message = "La cuenta contable es obligatoria") Long cuentaContableId) {
 
         public void aplicar(BienMueble b) {
             b.setNoControlInventario(noControlInventario.trim());
@@ -58,15 +61,16 @@ public final class BienMuebleDtos {
     public record BienMuebleResponse(Long id, String noControlInventario, String descripcion, String marca,
             String modelo, String serie, String especificaciones, String ubicacion, String estado,
             String servidorPublico, String cargo, LocalDate fechaResguardo, String documentoSoporte,
-            String noFactura, String expedidaPor, LocalDate fechaFactura, BigDecimal costo, AreaRef area,
-            boolean activo, Instant creadoEn, Instant actualizadoEn) {
+            String noFactura, String expedidaPor, LocalDate fechaFactura, BigDecimal costo, AreaRef area, CuentaRef cuentaContable,
+            DepreciacionResumen depreciacion, boolean activo, Instant creadoEn, Instant actualizadoEn) {
 
-        public static BienMuebleResponse from(BienMueble b) {
+        public static BienMuebleResponse from(BienMueble b, DepreciacionResumen depreciacion) {
             return new BienMuebleResponse(b.getId(), b.getNoControlInventario(), b.getDescripcion(), b.getMarca(),
                     b.getModelo(), b.getSerie(), b.getEspecificaciones(), b.getUbicacion(), b.getEstado(),
                     b.getServidorPublico(), b.getCargo(), b.getFechaResguardo(), b.getDocumentoSoporte(),
                     b.getNoFactura(), b.getExpedidaPor(), b.getFechaFactura(), b.getCosto(),
-                    AreaRef.from(b.getArea()), b.isActivo(), b.getCreadoEn(), b.getActualizadoEn());
+                    AreaRef.from(b.getArea()),
+                    CuentaRef.from(b.getCuentaContable()), depreciacion, b.isActivo(), b.getCreadoEn(), b.getActualizadoEn());
         }
     }
 }

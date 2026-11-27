@@ -74,12 +74,29 @@ public class Vehiculo extends BienBase {
     @Column(name = "valor_factura", precision = 14, scale = 2)
     private BigDecimal valorFactura;
 
-    @Column(name = "valor_depreciado", precision = 14, scale = 2)
-    private BigDecimal valorDepreciado;
-
     @Column(length = 150)
     private String propiedad;
 
     @Column(length = 250)
     private String condiciones;
+
+    @Override
+    public BigDecimal valorDepreciable() {
+        return valorFactura;
+    }
+
+    @Override
+    public LocalDate fechaBaseDepreciacion() {
+        return fechaFactura;
+    }
+
+    @Override
+    public String descripcionValorDepreciable() {
+        return "el valor de factura";
+    }
+
+    @Override
+    public String descripcionFechaBase() {
+        return "la fecha de factura";
+    }
 }

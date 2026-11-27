@@ -234,7 +234,14 @@ export default function Transferencias() {
                             {[
                                 ["Oficio de petición", detalle.oficioPeticion],
                                 ["Solicitó", `${detalle.solicitante.nombreCompleto} · ${formatoFechaHora(detalle.fechaSolicitud)}`],
-                                ["Recibe", [detalle.recibeNombre, detalle.recibeCargo].filter(Boolean).join(" — ")],
+                                [
+                                    detalle.estatus === "AUTORIZADA" ? "Entregó (titular del área)" : "Entrega (titular del área)",
+                                    detalle.titularOrigen || "Sin titular registrado",
+                                ],
+                                [
+                                    detalle.estatus === "AUTORIZADA" ? "Recibió (titular del área)" : "Recibe (titular del área)",
+                                    detalle.titularDestino || "Sin titular registrado",
+                                ],
                                 ["Motivo", detalle.motivo],
                                 detalle.resueltoPor && [
                                     detalle.estatus === "CANCELADA" ? "Canceló" : "Resolvió",

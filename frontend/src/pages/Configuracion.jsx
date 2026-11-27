@@ -30,6 +30,7 @@ import useFetch from "../hooks/useFetch";
 import { catalogosApi, parametrosApi } from "../api/endpoints";
 import Aviso from "../components/Aviso";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ConfigDepreciacion from "../components/ConfigDepreciacion";
 import EncabezadoPagina from "../components/EncabezadoPagina";
 import useAuth from "../auth/useAuth";
 import { ROLES } from "../auth/roles";
@@ -83,7 +84,7 @@ export default function Configuracion() {
                 titulo={esAdmin ? "Configuración del Sistema" : "Áreas"}
                 descripcion={
                     esAdmin
-                        ? "Estructura municipal (direcciones generales y áreas) y datos del vale de traspaso."
+                        ? "Estructura municipal (direcciones generales y áreas), firmantes del vale de traspaso y reglas de depreciación."
                         : "Registro de las áreas de cada dirección general. Las direcciones generales las da de alta el administrador."
                 }
             />
@@ -135,7 +136,7 @@ export default function Configuracion() {
                                             <ListSubheader sx={{ fontWeight: 700, lineHeight: "32px" }}>{direccion.nombre}</ListSubheader>
                                             {lista.map((a) => (
                                                 <ListItem key={a.id} divider secondaryAction={botonesItem("area", a)} sx={{ pr: 11 }}>
-                                                    <ListItemText primary={a.nombre} secondary={a.nombreCargo || "Sin cargo registrado"} />
+                                                    <ListItemText primary={a.nombre} secondary={a.nombreCargo ? `Titular: ${a.nombreCargo}` : "Sin titular registrado"} />
                                                 </ListItem>
                                             ))}
                                             {lista.length === 0 && (
@@ -172,6 +173,12 @@ export default function Configuracion() {
                 {esAdmin && (
                     <Grid size={12}>
                         <FirmantesVale onGuardado={() => setAviso({ tipo: "success", mensaje: "Firmantes del vale actualizados." })} />
+                    </Grid>
+                )}
+
+                {esAdmin && (
+                    <Grid size={12}>
+                        <ConfigDepreciacion onAviso={setAviso} />
                     </Grid>
                 )}
             </Grid>
@@ -272,7 +279,8 @@ function CatalogoDialog({ tipo, item, direcciones, onClose, onGuardado }) {
                 {esArea && (
                     <TextField
                         fullWidth
-                        label="Nombre del cargo (titular del área)"
+                        label="Titular del área (nombre completo)"
+                        helperText="Responsable del inventario a su resguardo; firma los vales de traspaso"
                         value={form.nombreCargo}
                         onChange={(e) => setForm((f) => ({ ...f, nombreCargo: e.target.value }))}
                     />
@@ -290,7 +298,9 @@ function CatalogoDialog({ tipo, item, direcciones, onClose, onGuardado }) {
 }
 
 function FirmantesVale({ onGuardado }) {
-    const { data, error, recargar } = useFetch("/admin/parametros");
+    const { data: todos, error, recargar } = useFetch("/admin/parametros");
+    // Solo los firmantes; la regla de depreciación tiene su propia sección
+    const data = todos?.filter((p) => p.clave.startsWith("firma."));
     return (
         <Card>
             <CardContent>
@@ -299,7 +309,7 @@ function FirmantesVale({ onGuardado }) {
                     Firmantes del vale de traspaso
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Nombres y cargos que se imprimen en los bloques "Autoriza" y "Vo. Bo." de cada vale.
+                    Nombre y cargo de quien autoriza cada vale (Dirección de Patrimonio). Las firmas de entrega y recibe salen de cada traspaso.
                 </Typography>
                 {error && <Alert severity="error">{error.message}</Alert>}
                 {data && (

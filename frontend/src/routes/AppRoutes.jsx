@@ -13,6 +13,7 @@ import Bajas from "../pages/Bajas";
 import Transferencias from "../pages/Transferencias";
 import Usuarios from "../pages/Usuarios";
 import Configuracion from "../pages/Configuracion";
+import Depreciacion from "../pages/Depreciacion";
 
 const { ADMINISTRADOR, PATRIMONIO } = ROLES;
 
@@ -55,6 +56,7 @@ export default function AppRoutes() {
 
                 <Route element={<ProtectedRoute roles={[PATRIMONIO, ADMINISTRADOR]} />}>
                     <Route path="/dashboard/bajas" element={<Bajas />} />
+                    <Route path="/dashboard/depreciacion" element={<Depreciacion />} />
                 </Route>
 
                 {/* Administrador y Patrimonio gestionan usuarios y áreas

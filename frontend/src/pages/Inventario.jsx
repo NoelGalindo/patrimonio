@@ -26,6 +26,7 @@ import useDebounce from "../hooks/useDebounce";
 import { bienesApi } from "../api/endpoints";
 import { CLAVES_TIPO, TIPOS_BIEN, columnasDe } from "../bienes/tiposBien";
 import valorCampo from "../bienes/valorCampo";
+import { formatoMoneda } from "../utils/formato";
 import AreaSelect from "../components/AreaSelect";
 import Aviso from "../components/Aviso";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -190,6 +191,13 @@ export default function Inventario() {
                         principal: i === 0,
                         secundaria: c.name === def.titulo,
                     })),
+                    {
+                        id: "valorLibros",
+                        label: "Valor en libros",
+                        align: "right",
+                        render: (bien) =>
+                            bien.depreciacion?.valorLibros != null ? formatoMoneda(bien.depreciacion.valorLibros) : "—",
+                    },
                     ...(esUsuario ? [] : [{ id: "area", label: "Área", render: (bien) => bien.area?.nombre }]),
                 ]}
                 filas={filas}

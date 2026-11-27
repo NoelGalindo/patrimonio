@@ -21,9 +21,7 @@ public final class TraspasoDtos {
             @NotEmpty(message = "Selecciona al menos un bien") @Size(max = 100) List<@NotNull Long> bienIds,
             @NotNull(message = "El área destino es obligatoria") Long areaDestinoId,
             @Size(max = 100) String oficioPeticion,
-            @Size(max = 2000) String motivo,
-            @NotBlank(message = "Indica quién recibe el bien") @Size(max = 200) String recibeNombre,
-            @Size(max = 200) String recibeCargo) {
+            @Size(max = 2000) String motivo) {
     }
 
     public record ResolverTraspasoRequest(@Size(max = 2000) String comentario) {
@@ -48,15 +46,18 @@ public final class TraspasoDtos {
     }
 
     public record TraspasoResponse(Long id, Integer folio, Integer anioFolio, String oficioPeticion,
-            AreaRef areaOrigen, AreaRef areaDestino, UsuarioRef solicitante, String motivo, String recibeNombre,
-            String recibeCargo, EstatusTraspaso estatus, Instant fechaSolicitud, UsuarioRef resueltoPor,
+            AreaRef areaOrigen, AreaRef areaDestino, String titularOrigen, String titularDestino,
+            UsuarioRef solicitante, String motivo, EstatusTraspaso estatus, Instant fechaSolicitud, UsuarioRef resueltoPor,
             Instant fechaResolucion, String comentarioResolucion, List<BienTraspasoResponse> bienes) {
 
         static TraspasoResponse from(SolicitudTraspaso s) {
             return new TraspasoResponse(s.getId(), s.getFolio(), s.getAnioFolio(), s.getOficioPeticion(),
                     AreaRef.from(s.getAreaOrigen()), AreaRef.from(s.getAreaDestino()),
+                    // Autorizada: los titulares que firmaron; pendiente: los titulares actuales
+                    s.getTitularOrigen() != null ? s.getTitularOrigen() : s.getAreaOrigen().getNombreCargo(),
+                    s.getTitularDestino() != null ? s.getTitularDestino() : s.getAreaDestino().getNombreCargo(),
                     new UsuarioRef(s.getSolicitante().getId(), s.getSolicitante().getNombreCompleto()),
-                    s.getMotivo(), s.getRecibeNombre(), s.getRecibeCargo(), s.getEstatus(), s.getFechaSolicitud(),
+                    s.getMotivo(), s.getEstatus(), s.getFechaSolicitud(),
                     s.getResueltoPor() == null ? null
                             : new UsuarioRef(s.getResueltoPor().getId(), s.getResueltoPor().getNombreCompleto()),
                     s.getFechaResolucion(), s.getComentarioResolucion(),

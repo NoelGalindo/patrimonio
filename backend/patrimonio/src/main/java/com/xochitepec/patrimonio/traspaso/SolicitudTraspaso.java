@@ -61,12 +61,12 @@ public class SolicitudTraspaso {
     @Column(columnDefinition = "text")
     private String motivo;
 
-    /** Servidor público del área destino que recibe el bien (nuevo resguardante). */
-    @Column(name = "recibe_nombre", nullable = false, length = 200)
-    private String recibeNombre;
+    /** Titulares de las áreas al autorizar: firman "entrega" y "recibe" en el vale. */
+    @Column(name = "titular_origen", length = 200)
+    private String titularOrigen;
 
-    @Column(name = "recibe_cargo", length = 200)
-    private String recibeCargo;
+    @Column(name = "titular_destino", length = 200)
+    private String titularDestino;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

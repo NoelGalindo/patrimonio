@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.xochitepec.patrimonio.common.ApiException;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionService;
+import com.xochitepec.patrimonio.depreciacion.ReglaInicioDepreciacion;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -43,7 +45,12 @@ public class ParametroController {
         for (ParametroDto c : cambios) {
             ParametroSistema p = repo.findById(c.clave())
                     .orElseThrow(() -> ApiException.solicitudInvalida("Parámetro desconocido: " + c.clave()));
-            p.setValor(c.valor() == null ? null : c.valor().trim());
+            String valor = c.valor() == null ? null : c.valor().trim();
+            if (ReglaInicioDepreciacion.CLAVE_PARAMETRO.equals(c.clave())
+                    && DepreciacionService.parsearRegla(valor).isEmpty()) {
+                throw ApiException.solicitudInvalida("Regla de depreciación inválida: " + valor);
+            }
+            p.setValor(valor);
         }
         return listar();
     }

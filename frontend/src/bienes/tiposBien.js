@@ -6,6 +6,7 @@
 
 export const TIPOS_BIEN = {
     muebles: {
+        tipoContable: "MUEBLE", // tipo de bien en el catálogo de cuentas CONAC
         label: "Bienes muebles",
         singular: "bien mueble",
         clave: "noControlInventario",
@@ -45,6 +46,7 @@ export const TIPOS_BIEN = {
         ],
     },
     inmuebles: {
+        tipoContable: "INMUEBLE", // tipo de bien en el catálogo de cuentas CONAC
         label: "Bienes inmuebles",
         singular: "bien inmueble",
         clave: "noExpediente",
@@ -89,6 +91,7 @@ export const TIPOS_BIEN = {
         ],
     },
     vehiculos: {
+        tipoContable: "VEHICULO", // tipo de bien en el catálogo de cuentas CONAC
         label: "Vehículos",
         singular: "vehículo",
         clave: "noInventario",
@@ -121,7 +124,6 @@ export const TIPOS_BIEN = {
                     { name: "folioFactura", label: "Folio de factura", size: 3 },
                     { name: "fechaFactura", label: "Fecha de factura", type: "date", size: 3 },
                     { name: "valorFactura", label: "Valor factura", type: "money", size: 4 },
-                    { name: "valorDepreciado", label: "Valor depreciado", type: "money", size: 4 },
                     { name: "documentacion", label: "Documentación", type: "textarea", size: 12 },
                 ],
             },
@@ -141,7 +143,7 @@ export function columnasDe(tipo) {
 
 /** Formulario vacío para un tipo de bien. */
 export function formularioVacio(tipo) {
-    const f = { areaId: "" };
+    const f = { areaId: "", cuentaContableId: "" };
     camposDe(tipo).forEach((c) => {
         f[c.name] = "";
     });
@@ -155,12 +157,16 @@ export function aFormulario(tipo, bien) {
         if (bien[k] !== null && bien[k] !== undefined) f[k] = bien[k];
     });
     f.areaId = bien.area?.id ?? "";
+    f.cuentaContableId = bien.cuentaContable?.id ?? "";
     return f;
 }
 
 /** Convierte valores de formulario al cuerpo que espera la API ("" -> null, números). */
 export function aPeticion(tipo, form) {
-    const body = { areaId: form.areaId === "" ? null : Number(form.areaId) };
+    const body = {
+        areaId: form.areaId === "" ? null : Number(form.areaId),
+        cuentaContableId: form.cuentaContableId === "" ? null : Number(form.cuentaContableId),
+    };
     camposDe(tipo).forEach((c) => {
         const v = form[c.name];
         if (v === "" || v === undefined) body[c.name] = null;

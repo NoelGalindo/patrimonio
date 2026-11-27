@@ -116,8 +116,6 @@ public class TraspasoService {
         s.setSolicitante(usuarios.getReferenceById(u.id()));
         s.setOficioPeticion(blankToNull(req.oficioPeticion()));
         s.setMotivo(blankToNull(req.motivo()));
-        s.setRecibeNombre(req.recibeNombre().trim());
-        s.setRecibeCargo(blankToNull(req.recibeCargo()));
         for (BienMueble b : bienes) {
             SolicitudTraspasoDetalle d = new SolicitudTraspasoDetalle();
             d.setBienMueble(b);
@@ -157,6 +155,9 @@ public class TraspasoService {
         SolicitudTraspaso s = solicitudes.findByIdForUpdate(id)
                 .orElseThrow(() -> ApiException.noEncontrado("Solicitud de traspaso"));
         exigirPendiente(s);
+        // Firman el vale los titulares de ambas áreas (responsables del inventario a su resguardo)
+        String titularOrigen = titular(s.getAreaOrigen());
+        String titularDestino = titular(s.getAreaDestino());
 
         LocalDate hoy = LocalDate.now(ZONA);
         for (SolicitudTraspasoDetalle d : s.getDetalles()) {
@@ -168,14 +169,26 @@ public class TraspasoService {
             }
             d.tomarSnapshot(b);
             b.setArea(s.getAreaDestino());
-            b.setServidorPublico(s.getRecibeNombre());
-            b.setCargo(s.getRecibeCargo());
+            // El resguardo pasa al titular del área destino
+            b.setServidorPublico(titularDestino);
+            b.setCargo("Titular de " + s.getAreaDestino().getNombre());
             b.setFechaResguardo(hoy);
         }
+        s.setTitularOrigen(titularOrigen);
+        s.setTitularDestino(titularDestino);
         s.setAnioFolio(hoy.getYear());
         s.setFolio(folios.siguiente(hoy.getYear()));
         resolver(s, EstatusTraspaso.AUTORIZADA, comentario, currentUser.get());
         return TraspasoResponse.from(s);
+    }
+
+    private static String titular(Area area) {
+        String t = area.getNombreCargo();
+        if (t == null || t.isBlank()) {
+            throw ApiException.solicitudInvalida("El área " + area.getNombre()
+                    + " no tiene titular registrado; regístralo en Áreas antes de autorizar (firma el vale)");
+        }
+        return t.trim();
     }
 
     /** Genera el PDF del vale de una solicitud autorizada y visible para el usuario actual. */

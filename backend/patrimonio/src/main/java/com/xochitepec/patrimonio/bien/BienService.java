@@ -2,7 +2,9 @@ package com.xochitepec.patrimonio.bien;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.xochitepec.patrimonio.catalogo.Area;
 import com.xochitepec.patrimonio.catalogo.AreaRepository;
 import com.xochitepec.patrimonio.common.ApiException;
+import com.xochitepec.patrimonio.depreciacion.CalculadoraDepreciacion.PeriodoAnual;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionDtos.DepreciacionResumen;
+import com.xochitepec.patrimonio.depreciacion.DepreciacionService;
+import com.xochitepec.patrimonio.depreciacion.ReglaInicioDepreciacion;
+import com.xochitepec.patrimonio.depreciacion.TipoBienContable;
 import com.xochitepec.patrimonio.security.CurrentUser;
 import com.xochitepec.patrimonio.security.UsuarioActual;
 
@@ -27,11 +34,14 @@ public abstract class BienService<E extends BienBase> {
     protected final BienRepository<E> repo;
     protected final AreaRepository areas;
     protected final CurrentUser currentUser;
+    protected final DepreciacionService depreciacion;
 
-    protected BienService(BienRepository<E> repo, AreaRepository areas, CurrentUser currentUser) {
+    protected BienService(BienRepository<E> repo, AreaRepository areas, CurrentUser currentUser,
+            DepreciacionService depreciacion) {
         this.repo = repo;
         this.areas = areas;
         this.currentUser = currentUser;
+        this.depreciacion = depreciacion;
     }
 
     /** Nombre para mensajes de error ("Bien mueble", "Vehículo"...). */
@@ -39,6 +49,9 @@ public abstract class BienService<E extends BienBase> {
 
     /** Atributos de texto en los que busca el parámetro `q`. */
     protected abstract List<String> camposBusqueda();
+
+    /** Tipo de bien para validar que la cuenta contable le corresponda. */
+    protected abstract TipoBienContable tipoContable();
 
     @Transactional(readOnly = true)
     public Page<E> listar(String q, Long areaId, Boolean activo, Pageable pageable) {
@@ -77,18 +90,36 @@ public abstract class BienService<E extends BienBase> {
     }
 
     @Transactional
-    public E crear(E bien, Long areaId) {
+    public E crear(E bien, Long areaId, Long cuentaContableId) {
         bien.setArea(area(areaId));
+        bien.setCuentaContable(depreciacion.cuentaAsignable(cuentaContableId, tipoContable()));
         bien.setCreadoPor(currentUser.get().id());
         return repo.saveAndFlush(bien);
     }
 
     @Transactional
-    public E actualizar(Long id, Long areaId, Consumer<E> cambios) {
+    public E actualizar(Long id, Long areaId, Long cuentaContableId, Consumer<E> cambios) {
         E bien = obtener(id);
         cambios.accept(bien);
         bien.setArea(area(areaId));
+        bien.setCuentaContable(depreciacion.cuentaAsignable(cuentaContableId, tipoContable()));
         return repo.saveAndFlush(bien);
+    }
+
+    /**
+     * Convierte entidades en respuestas con su depreciación a hoy. La regla se lee una sola vez,
+     * así una página entera usa la misma.
+     */
+    public <R> Function<E, R> conDepreciacion(BiFunction<E, DepreciacionResumen, R> from) {
+        ReglaInicioDepreciacion regla = depreciacion.reglaActual();
+        java.time.LocalDate hoy = depreciacion.hoy();
+        return b -> from.apply(b, depreciacion.resumen(b, regla, hoy));
+    }
+
+    /** Calendario anual de depreciación del bien (vacío si le falta información). */
+    @Transactional(readOnly = true)
+    public List<PeriodoAnual> calendario(Long id) {
+        return depreciacion.calendario(obtener(id));
     }
 
     /** Baja lógica: el bien deja de aparecer en el inventario activo pero se conserva el registro. */
